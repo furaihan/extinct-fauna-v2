@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.output/
+.tanstack/
+
+# Logs
+*.log
+
+# Environment (keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+*.local
+!.env.example
+
+# Legacy MySQL dump (large; not tracked)
+extinct-fauna.sql
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# TS / Vite caches
+*.tsbuildinfo
+.vite/

@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+# Keep binaries untouched
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.svg text
+*.ttf binary
+*.woff binary
+*.woff2 binary
+
+# Lockfiles: merge as text, do not diff loudly
+bun.lock text
