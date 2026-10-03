@@ -116,9 +116,9 @@ export function SignupForm() {
         <Button
           type="submit"
           disabled={submitting}
-          className="mt-2 h-11 w-full font-bold"
+          className="mt-2 h-11 w-full font-bold rounded-full"
         >
-          {submitting ? 'MEMPROSES…' : 'SIGN UP'}
+          {submitting ? 'Memproses…' : 'Buat Akun'}
         </Button>
       </FieldGroup>
     </form>

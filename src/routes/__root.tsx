@@ -9,6 +9,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
+import { TriangleAlertIcon, CompassIcon } from 'lucide-react'
 import { queryClient } from '@/shared/lib/query-client.ts'
 import { Toaster } from '@/shared/ui/toast.tsx'
 import { Button } from '@/shared/ui/button.tsx'
@@ -45,20 +46,22 @@ export const Route = createRootRoute({
 function RootError({ error }: ErrorComponentProps) {
   return (
     <div className="grid min-h-dvh w-full place-items-center bg-background p-6 text-center">
-      <div className="max-w-md">
-        <div className="text-6xl">⚠️</div>
-        <h1 className="mt-3 text-xl font-black">Terjadi Kesalahan</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+      <div className="flex max-w-md flex-col items-center gap-4">
+        <div className="grid size-16 place-items-center rounded-2xl bg-destructive/10 text-destructive">
+          <TriangleAlertIcon className="size-8" />
+        </div>
+        <h1 className="font-heading text-2xl font-bold tracking-tight">Terjadi Kesalahan</h1>
+        <p className="text-sm text-muted-foreground leading-relaxed">
           {error instanceof Error
             ? error.message
             : 'Kesalahan sistem tidak terduga.'}
         </p>
         <Button
-          className="mt-5 font-bold"
+          className="mt-2 font-bold rounded-full"
           render={<Link to="/" />}
           nativeButton={false}
         >
-          KEMBALI KE BERANDA
+          Kembali ke Beranda
         </Button>
       </div>
     </div>
@@ -68,18 +71,20 @@ function RootError({ error }: ErrorComponentProps) {
 function NotFound() {
   return (
     <div className="grid min-h-dvh w-full place-items-center bg-background p-6 text-center">
-      <div className="max-w-md">
-        <div className="text-6xl">🧭</div>
-        <h1 className="mt-3 text-xl font-black">Halaman tidak ditemukan</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Alamat yang Anda buka tidak tersedia.
+      <div className="flex max-w-md flex-col items-center gap-4">
+        <div className="grid size-16 place-items-center rounded-2xl bg-muted text-muted-foreground">
+          <CompassIcon className="size-8" />
+        </div>
+        <h1 className="font-heading text-2xl font-bold tracking-tight">Halaman tidak ditemukan</h1>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Alamat yang Anda buka tidak tersedia atau sudah dipindahkan.
         </p>
         <Button
-          className="mt-5 font-bold"
+          className="mt-2 font-bold rounded-full"
           render={<Link to="/" />}
           nativeButton={false}
         >
-          KEMBALI KE BERANDA
+          Kembali ke Beranda
         </Button>
       </div>
     </div>
@@ -88,13 +93,25 @@ function NotFound() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const stored = localStorage.getItem('theme');
+                if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          <div className="flex min-h-dvh flex-col bg-background">
+          <div className="flex min-h-dvh flex-col bg-background text-foreground">
             <SiteHeader />
             <main className="flex-1">{children}</main>
             <SiteFooter />

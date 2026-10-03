@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/shared/ui/button.tsx'
 import { Card, CardContent } from '@/shared/ui/card.tsx'
-import { Badge } from '@/shared/ui/badge.tsx'
 import { Skeleton } from '@/shared/ui/skeleton.tsx'
 import { cn } from '@/shared/lib/utils.ts'
+import { SectionHeading } from '@/shared/components/section-heading.tsx'
 import { getRandomAnimalsFn } from '@/modules/animal/server/animal.functions.ts'
 import { animalKeys } from '@/modules/animal/query-keys.ts'
+import { Link } from '@tanstack/react-router'
+import { ArrowRightIcon, SparklesIcon } from 'lucide-react'
 
 export function FunFactSection() {
   const [selected, setSelected] = useState<number | null>(null)
@@ -19,27 +21,25 @@ export function FunFactSection() {
   const animals = data?.animals ?? []
 
   return (
-    <section className="page-wrap py-14">
-      <div className="mb-8 flex flex-col items-center gap-2 text-center">
-        <Badge variant="secondary">Fun Fact</Badge>
-        <h2 className="font-heading text-3xl font-bold">
-          Fakta Menarik Seputar Fauna
-        </h2>
-        <p className="max-w-xl text-muted-foreground">
-          Klik salah satu kartu untuk membaca fakta uniknya.
-        </p>
-      </div>
+    <section className="page-wrap py-20">
+      <SectionHeading
+        eyebrow="Fakta Unik"
+        title="Menyelami Keunikan Dunia Satwa"
+        description="Klik pada salah satu kartu satwa untuk membuka fakta menarik dan rahasia alam mereka."
+      />
 
       {isLoading ? (
         <div className="grid gap-6 sm:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-80 rounded-4xl" />
+            <Skeleton key={i} className="h-80 rounded-2xl" />
           ))}
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-3">
           {animals.map((animal) => {
             const isActive = selected === animal.animal_id
+            const imageUrl = animal.image ? (animal.image.startsWith('/') ? animal.image : `/${animal.image}`) : '/homie.jpg'
+
             return (
               <Card
                 key={animal.animal_id}
@@ -47,39 +47,54 @@ export function FunFactSection() {
                   setSelected(isActive ? null : animal.animal_id)
                 }
                 className={cn(
-                  'cursor-pointer overflow-hidden transition-all',
-                  selected !== null && !isActive && 'opacity-50 blur-[2px]',
+                  'cursor-pointer overflow-hidden rounded-2xl border bg-card transition-all duration-300 hover:shadow-md flex flex-col',
+                  isActive ? 'ring-2 ring-primary shadow-lg' : 'hover:border-primary/40',
                 )}
               >
-                <img
-                  src={animal.image ?? '/homie.jpg'}
-                  alt={animal.animal_name}
-                  className="h-44 w-full object-cover"
-                />
-                <CardContent className="flex flex-col gap-2 pt-4">
-                  <h3 className="font-heading text-lg font-bold">
-                    {animal.animal_name}
-                  </h3>
-                  <p
-                    className={cn(
-                      'text-sm text-muted-foreground',
-                      isActive ? 'line-clamp-none' : 'line-clamp-3',
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                  <img
+                    src={imageUrl}
+                    alt={animal.animal_name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                </div>
+                <CardContent className="flex flex-1 flex-col justify-between gap-3 p-5">
+                  <div className="space-y-2">
+                    <h3 className="font-heading text-lg font-bold tracking-tight">
+                      {animal.animal_name}
+                    </h3>
+                    <p
+                      className={cn(
+                        'text-sm text-muted-foreground leading-relaxed',
+                        isActive ? 'line-clamp-none' : 'line-clamp-3',
+                      )}
+                    >
+                      {animal.fun_fact}
+                    </p>
+                  </div>
+                  <div className="pt-2 flex items-center justify-between border-t mt-auto">
+                    <span className="text-xs font-semibold text-primary flex items-center gap-1">
+                      <SparklesIcon className="size-3.5" />
+                      {isActive ? 'Tutup Fakta' : 'Baca Fakta Unik'}
+                    </span>
+                    {isActive && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full font-semibold"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                        }}
+                        render={
+                          <Link to="/explore/$animalId" params={{ animalId: String(animal.animal_id) }}>
+                            Detail <ArrowRightIcon data-icon="inline-end" />
+                          </Link>
+                        }
+                        nativeButton={false}
+                      />
                     )}
-                  >
-                    {animal.fun_fact}
-                  </p>
-                  {isActive && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-1 w-fit font-semibold"
-                      onClick={(e) => e.stopPropagation()}
-                      render={
-                        <a href={`/explore/${animal.animal_id}`}>Read More</a>
-                      }
-                      nativeButton={false}
-                    />
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             )

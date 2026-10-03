@@ -1,11 +1,19 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Card, CardContent } from '@/shared/ui/card.tsx'
-import { Badge } from '@/shared/ui/badge.tsx'
 import { Skeleton } from '@/shared/ui/skeleton.tsx'
 import { Button } from '@/shared/ui/button.tsx'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select.tsx'
+import { PageHero } from '@/shared/components/page-hero.tsx'
+import { AnimalCard } from '@/modules/animal/components/animal-card.tsx'
 import { getAnimalsFn } from '@/modules/animal/server/animal.functions.ts'
 import { animalKeys } from '@/modules/animal/query-keys.ts'
+import { SearchXIcon, RotateCcwIcon } from 'lucide-react'
 
 interface ExploreSearch {
   type?: string
@@ -20,18 +28,18 @@ export const Route = createFileRoute('/explore/')({
     environment:
       typeof search.environment === 'string' ? search.environment : undefined,
   }),
-  head: () => ({ meta: [{ title: 'Explore — Extinct Fauna' }] }),
+  head: () => ({ meta: [{ title: 'Jelajahi Fauna — Extinct Fauna' }] }),
   component: ExplorePage,
 })
 
 const TYPE_OPTIONS = [
-  { value: '', label: 'Any' },
-  { value: 'unique', label: 'Unique' },
-  { value: 'extinct', label: 'Extinct' },
-  { value: 'rare', label: 'Rare' },
+  { value: '', label: 'Semua Jenis' },
+  { value: 'unique', label: 'Unik' },
+  { value: 'extinct', label: 'Punah' },
+  { value: 'rare', label: 'Langka' },
 ]
 const REGION_OPTIONS = [
-  { value: '', label: 'Any' },
+  { value: '', label: 'Semua Wilayah' },
   { value: 'africa', label: 'Afrika' },
   { value: 'asia', label: 'Asia' },
   { value: 'australia', label: 'Australia' },
@@ -40,15 +48,15 @@ const REGION_OPTIONS = [
   { value: 'south america', label: 'Amerika Selatan' },
 ]
 const ENVIRONMENT_OPTIONS = [
-  { value: '', label: 'Any' },
+  { value: '', label: 'Semua Habitat' },
   { value: 'ampibian', label: 'Amfibi' },
-  { value: 'aquatic', label: 'Aquatic' },
-  { value: 'desert', label: 'Desert' },
-  { value: 'forest', label: 'Forest' },
-  { value: 'grassland', label: 'Grassland' },
-  { value: 'mountain', label: 'Mountain' },
+  { value: 'aquatic', label: 'Akuatik' },
+  { value: 'desert', label: 'Gurun' },
+  { value: 'forest', label: 'Hutan' },
+  { value: 'grassland', label: 'Padang Rumput' },
+  { value: 'mountain', label: 'Pegunungan' },
   { value: 'polar', label: 'Polar' },
-  { value: 'savanna', label: 'Savanna' },
+  { value: 'savanna', label: 'Sabana' },
   { value: 'tundra', label: 'Tundra' },
 ]
 
@@ -70,60 +78,52 @@ function ExplorePage() {
   const hasFilters = Boolean(filters.type || filters.region || filters.environment)
 
   return (
-    <div>
-      <section
-        className="flex h-[55vh] items-center justify-center bg-cover bg-center"
-        style={{ backgroundImage: 'url(/takahe.jpg)' }}
-      >
-        <div className="flex h-full w-full flex-col items-center justify-center bg-black/50 px-4 text-center">
-          <p className="font-heading text-5xl font-black text-white sm:text-6xl">
-            Explore
-          </p>
-          <p className="mt-3 max-w-xl text-lg text-white/90 text-balance">
-            Welcome To Explore, Find Animals Around the World
-          </p>
-        </div>
-      </section>
+    <div className="flex flex-col">
+      <PageHero
+        title="Jelajahi Satwa Dunia"
+        subtitle="Temukan arsip lengkap berbagai fauna langka, unik, dan yang telah punah dari seluruh penjuru bumi."
+        bgImage="/takahe.jpg"
+      />
 
       <section className="page-wrap py-8">
-        <div className="grid gap-4 rounded-2xl border bg-card p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 rounded-2xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4 items-end">
           <FilterSelect
-            label="Type"
+            label="Kategori Jenis"
             value={filters.type}
             options={TYPE_OPTIONS}
             onChange={(value) =>
               void navigate({
-                search: (prev) => ({ ...prev, type: value }),
+                search: (prev) => ({ ...prev, type: value === 'all' ? '' : value }),
                 replace: true,
               })
             }
           />
           <FilterSelect
-            label="Region"
+            label="Wilayah Asal"
             value={filters.region}
             options={REGION_OPTIONS}
             onChange={(value) =>
               void navigate({
-                search: (prev) => ({ ...prev, region: value }),
+                search: (prev) => ({ ...prev, region: value === 'all' ? '' : value }),
                 replace: true,
               })
             }
           />
           <FilterSelect
-            label="Environment"
+            label="Habitat / Lingkungan"
             value={filters.environment}
             options={ENVIRONMENT_OPTIONS}
             onChange={(value) =>
               void navigate({
-                search: (prev) => ({ ...prev, environment: value }),
+                search: (prev) => ({ ...prev, environment: value === 'all' ? '' : value }),
                 replace: true,
               })
             }
           />
-          <div className="flex items-end">
+          <div>
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full rounded-full font-semibold h-11"
               disabled={!hasFilters}
               onClick={() =>
                 void navigate({
@@ -132,55 +132,52 @@ function ExplorePage() {
                 })
               }
             >
-              Reset
+              <RotateCcwIcon data-icon="inline-start" />
+              Atur Ulang Filter
             </Button>
           </div>
         </div>
       </section>
 
-      <section className="page-wrap pb-16">
+      <section className="page-wrap pb-20">
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground font-medium">
+            Menampilkan <strong className="text-foreground">{animals.length}</strong> spesies satwa
+          </p>
+        </div>
+
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-56 rounded-4xl" />
+              <Skeleton key={i} className="h-72 rounded-2xl" />
             ))}
           </div>
         ) : animals.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-20 text-center">
-            <Badge variant="secondary">Kosong</Badge>
-            <p className="text-muted-foreground">
-              Tidak ada hewan yang cocok dengan filter ini.
+          <div className="flex flex-col items-center gap-3 py-24 text-center">
+            <div className="grid size-16 place-items-center rounded-2xl bg-muted text-muted-foreground">
+              <SearchXIcon className="size-8" />
+            </div>
+            <h3 className="font-heading text-xl font-bold">Tidak ada satwa yang cocok</h3>
+            <p className="text-sm text-muted-foreground max-w-sm">
+              Coba ubah kriteria filter wilayah atau kategori untuk menemukan hasil lainnya.
             </p>
+            <Button
+              variant="outline"
+              className="mt-2 rounded-full font-semibold"
+              onClick={() =>
+                void navigate({
+                  search: () => ({ type: '', region: '', environment: '' }),
+                  replace: true,
+                })
+              }
+            >
+              Reset Filter
+            </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {animals.map((animal) => (
-              <Card
-                key={animal.animal_id}
-                className="group overflow-hidden"
-              >
-                <Link
-                  to="/explore/$animalId"
-                  params={{ animalId: String(animal.animal_id) }}
-                >
-                  <div className="relative h-44 w-full overflow-hidden">
-                    <img
-                      src={animal.image ?? '/homie.jpg'}
-                      alt={animal.animal_name}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/40" />
-                    <p className="absolute inset-0 flex items-center justify-center px-2 text-center font-heading font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
-                      {animal.animal_name}
-                    </p>
-                  </div>
-                  <CardContent className="pt-3">
-                    <h3 className="truncate font-heading font-semibold">
-                      {animal.animal_name}
-                    </h3>
-                  </CardContent>
-                </Link>
-              </Card>
+              <AnimalCard key={animal.animal_id} animal={animal} />
             ))}
           </div>
         )}
@@ -201,19 +198,22 @@ function FilterSelect({
   onChange: (value: string) => void
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-sm font-semibold">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="flex flex-col gap-2">
+      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </label>
+      <Select value={value} onValueChange={(val) => onChange(val ?? '')}>
+        <SelectTrigger className="w-full rounded-xl h-11 bg-background">
+          <SelectValue placeholder="Pilih..." />
+        </SelectTrigger>
+        <SelectContent className="rounded-2xl">
+          {options.map((option) => (
+            <SelectItem key={option.value || 'all'} value={option.value || 'all'} className="rounded-xl">
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }

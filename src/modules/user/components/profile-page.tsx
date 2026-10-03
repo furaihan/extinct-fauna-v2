@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { LogOutIcon, PencilIcon, TrophyIcon } from 'lucide-react'
+import { LogOutIcon, PencilIcon, TrophyIcon, UserCheckIcon } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar.tsx'
 import { Badge } from '@/shared/ui/badge.tsx'
 import { Button } from '@/shared/ui/button.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card.tsx'
 import { Skeleton } from '@/shared/ui/skeleton.tsx'
+import { Separator } from '@/shared/ui/separator.tsx'
 import { getProfileFn } from '@/modules/user/server/user.functions.ts'
 import { userKeys } from '@/modules/user/query-keys.ts'
 import { useLogout } from '@/modules/auth/components/use-logout.ts'
@@ -20,8 +21,8 @@ export function ProfilePage() {
   if (isLoading) {
     return (
       <div className="page-wrap flex flex-col gap-6 py-12">
-        <Skeleton className="h-40 w-full rounded-4xl" />
-        <Skeleton className="h-56 w-full rounded-4xl" />
+        <Skeleton className="h-40 w-full rounded-2xl" />
+        <Skeleton className="h-56 w-full rounded-2xl" />
       </div>
     )
   }
@@ -34,90 +35,112 @@ export function ProfilePage() {
     'Anonim'
 
   return (
-    <div className="page-wrap flex flex-col gap-6 py-10">
-      <Card className="overflow-hidden">
-        <div className="bg-primary px-6 py-8">
-          <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-            <Avatar className="size-24">
-              <AvatarFallback className="bg-primary-foreground/20 text-3xl font-black text-primary-foreground">
+    <div className="page-wrap flex flex-col gap-8 py-12">
+      <Card className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+        <div className="bg-primary px-8 py-10 text-primary-foreground">
+          <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
+            <Avatar className="size-24 border-2 border-white/20">
+              <AvatarFallback className="bg-white/15 text-3xl font-black text-primary-foreground">
                 {fullName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <h1 className="font-heading text-2xl font-black text-primary-foreground">
-                {fullName}
-              </h1>
-              <p className="text-primary-foreground/80">
-                {profile?.bio || 'Belum ada bio, yuk lengkapi di Edit Profile!'}
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center justify-center sm:justify-start gap-2">
+                <h1 className="font-heading text-2xl sm:text-3xl font-black">
+                  {fullName}
+                </h1>
+                <Badge variant="secondary" className="bg-white/20 text-primary-foreground border-0">
+                  <UserCheckIcon className="size-3 mr-1" />
+                  Aktif
+                </Badge>
+              </div>
+              <p className="text-primary-foreground/90 max-w-xl text-sm">
+                {profile?.bio || 'Belum ada bio. Lengkapi profilmu agar sobat fauna lainnya mengenalimu.'}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2.5">
               <Button
                 variant="secondary"
-                className="font-bold"
+                className="font-bold rounded-full bg-white text-primary hover:bg-white/90"
                 render={<Link to="/profile/edit" />}
                 nativeButton={false}
               >
                 <PencilIcon data-icon="inline-start" />
-                Edit Profile
+                Edit Profil
               </Button>
               <Button
                 variant="outline"
-                className="font-bold"
+                className="font-bold rounded-full border-white/30 text-white bg-white/10 hover:bg-white/20"
                 disabled={loggingOut}
                 onClick={() => void logout()}
               >
                 <LogOutIcon data-icon="inline-start" />
-                Logout
+                Keluar
               </Button>
             </div>
           </div>
         </div>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-1">
+      <div className="grid gap-8 md:grid-cols-3">
+        <Card className="rounded-2xl border bg-card shadow-sm md:col-span-1 h-fit">
           <CardHeader>
-            <CardTitle className="text-lg">Informasi</CardTitle>
+            <CardTitle className="text-lg font-bold">Informasi Akun</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3 text-sm">
+          <CardContent className="flex flex-col gap-4 text-sm">
             <InfoRow label="Username" value={profile?.username ?? '-'} />
+            <Separator />
             <InfoRow label="Email" value={profile?.email ?? '-'} />
-            <InfoRow label="Telepon" value={profile?.phone ?? '-'} />
+            <Separator />
+            <InfoRow label="Nomor Telepon" value={profile?.phone ?? '-'} />
+            <Separator />
             <InfoRow label="Alamat" value={profile?.address ?? '-'} />
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle className="text-lg">Riwayat Kuis Terakhir</CardTitle>
-            <Badge variant="secondary">
-              <TrophyIcon />
-              Highscore
+        <Card className="rounded-2xl border bg-card shadow-sm md:col-span-2">
+          <CardHeader className="flex-row items-center justify-between pb-4">
+            <CardTitle className="text-lg font-bold">Riwayat Kuis Terakhir</CardTitle>
+            <Badge variant="secondary" className="rounded-full">
+              <TrophyIcon className="size-3.5 mr-1 text-amber-500" />
+              Skor Terbaik
             </Badge>
           </CardHeader>
           <CardContent>
             {quizzes.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                Belum ada riwayat kuis. Ayo main kuis dulu!
-              </p>
+              <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
+                <p className="text-sm text-muted-foreground">
+                  Belum ada riwayat kuis yang diselesaikan.
+                </p>
+                <Button
+                  size="sm"
+                  className="rounded-full font-bold mt-2"
+                  render={<Link to="/explore" />}
+                  nativeButton={false}
+                >
+                  Mulai Kuis Pertama
+                </Button>
+              </div>
             ) : (
               <div className="flex flex-col gap-3">
                 {quizzes.map((quiz) => (
                   <div
                     key={quiz.quizId}
-                    className="flex items-center justify-between rounded-xl border p-4"
+                    className="flex items-center justify-between rounded-xl border p-4 bg-muted/20 transition-colors hover:bg-muted/40"
                   >
-                    <div>
-                      <p className="font-semibold">
-                        {quiz.animalName ?? 'Hewan'}
+                    <div className="space-y-0.5">
+                      <p className="font-semibold text-sm">
+                        {quiz.animalName ?? 'Satwa'}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(quiz.time).toLocaleString('id-ID')}
+                        {new Date(quiz.time).toLocaleString('id-ID', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                        })}
                       </p>
                     </div>
-                    <Badge className="text-sm">
-                      Skor {quiz.score}/{5}
+                    <Badge className="rounded-full px-3 py-1 text-xs font-bold">
+                      Skor {quiz.score}/5
                     </Badge>
                   </div>
                 ))}
@@ -132,11 +155,11 @@ export function ProfilePage() {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
-      <span className="break-words">{value}</span>
+      <span className="break-words font-medium">{value}</span>
     </div>
   )
 }

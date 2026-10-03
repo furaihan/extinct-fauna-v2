@@ -89,13 +89,13 @@ export function QuizRunner({ animalId, animalName, questions }: Props) {
 
   if (questions.length === 0) {
     return (
-      <div className="page-wrap flex flex-col items-center gap-3 py-24 text-center">
-        <Badge variant="secondary">Belum tersedia</Badge>
+      <div className="page-wrap flex flex-col items-center gap-4 py-24 text-center">
+        <Badge variant="secondary" className="rounded-full">Belum tersedia</Badge>
         <p className="text-muted-foreground">
-          Pertanyaan untuk {animalName} belum tersedia.
+          Pertanyaan untuk {animalName} belum tersedia saat ini.
         </p>
-        <Button render={<a href="/explore">Kembali</a>} nativeButton={false}>
-          Kembali ke Explore
+        <Button className="rounded-full font-bold" render={<a href="/explore">Kembali ke Jelajahi</a>} nativeButton={false}>
+          Kembali ke Jelajahi
         </Button>
       </div>
     )
@@ -103,9 +103,9 @@ export function QuizRunner({ animalId, animalName, questions }: Props) {
 
   if (finished) {
     return (
-      <div className="page-wrap flex flex-col items-center gap-3 py-24 text-center">
-        <Progress value={100} className="w-full max-w-xs" />
-        <p className="text-muted-foreground">Menyimpan hasil kuis…</p>
+      <div className="page-wrap flex flex-col items-center gap-4 py-24 text-center">
+        <Progress value={100} className="w-full max-w-xs h-2 rounded-full" />
+        <p className="text-sm text-muted-foreground font-medium">Menyimpan hasil kuis… mohon tunggu.</p>
       </div>
     )
   }
@@ -113,12 +113,14 @@ export function QuizRunner({ animalId, animalName, questions }: Props) {
   const question = questions[index]
 
   return (
-    <div className="page-wrap flex flex-col items-center gap-6 py-10">
+    <div className="page-wrap flex flex-col items-center gap-6 py-12">
       <div className="flex w-full max-w-3xl items-center justify-between">
-        <Badge variant="secondary">
-          {index + 1}/{questions.length}
+        <Badge variant="secondary" className="rounded-full px-3 py-1 text-sm font-semibold">
+          Soal {index + 1} dari {questions.length}
         </Badge>
-        <Badge>{animalName}</Badge>
+        <Badge className="rounded-full px-3 py-1 text-sm font-semibold">
+          {animalName}
+        </Badge>
       </div>
       <QuestionCard
         key={index}
@@ -153,35 +155,37 @@ function QuestionCard({
   const progress = ((QUESTION_SECONDS - timer) / QUESTION_SECONDS) * 100
 
   return (
-    <Card className="w-full max-w-3xl">
-      <CardHeader className="items-center gap-4 text-center">
+    <Card className="w-full max-w-3xl rounded-2xl border bg-card shadow-lg p-2">
+      <CardHeader className="items-center gap-4 text-center pb-2">
         <div
           className={
-            'grid size-16 place-items-center rounded-full border-4 font-heading text-2xl font-bold ' +
+            'grid size-16 place-items-center rounded-full border-4 font-heading text-xl font-black transition-colors ' +
             (timer <= 10
-              ? 'border-destructive text-destructive'
-              : 'border-primary text-primary')
+              ? 'border-destructive text-destructive bg-destructive/5 animate-pulse'
+              : 'border-primary text-primary bg-primary/5')
           }
         >
           {timer < 10 ? `0${timer}` : timer}
         </div>
-        <Progress value={progress} className="w-full" />
-        <CardTitle className="text-xl text-balance">{question.question}</CardTitle>
+        <Progress value={progress} className="w-full h-2 rounded-full" />
+        <CardTitle className="text-xl font-bold text-balance leading-relaxed pt-2">
+          {question.question}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+      <CardContent className="flex flex-col gap-3.5 pt-2">
         {(['option_1', 'option_2', 'option_3'] as const).map((option, i) => (
           <Button
             key={option}
             variant="outline"
-            className="h-auto min-h-12 w-full justify-start whitespace-normal py-3 text-left text-base font-medium"
+            className="h-auto min-h-14 w-full justify-start whitespace-normal py-3.5 px-5 text-left text-base font-medium rounded-xl transition-all hover:border-primary hover:bg-primary/5"
             onClick={() => onAnswer(option, QUESTION_SECONDS - timer)}
           >
-            <span className="mr-2 font-bold text-primary">{i + 1}.</span>
-            {question[option]}
+            <span className="mr-3 font-bold text-primary">0{i + 1}.</span>
+            <span className="flex-1">{question[option]}</span>
           </Button>
         ))}
-        <p className="text-center text-xs text-muted-foreground">
-          Soal {total} · jawaban tidak bisa diubah
+        <p className="text-center text-xs text-muted-foreground pt-3 border-t mt-2">
+          Total {total} soal · Jawaban tidak dapat diubah setelah dipilih
         </p>
       </CardContent>
     </Card>

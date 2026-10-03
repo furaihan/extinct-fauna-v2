@@ -1,21 +1,21 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { PhoneIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card.tsx'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar.tsx'
 import { Badge } from '@/shared/ui/badge.tsx'
+import { PageHero } from '@/shared/components/page-hero.tsx'
 
 export const Route = createFileRoute('/about')({
-  head: () => ({ meta: [{ title: 'About — Extinct Fauna' }] }),
+  head: () => ({ meta: [{ title: 'Tentang — Extinct Fauna' }] }),
   component: AboutPage,
 })
 
 const MEMBERS = [
-  { name: 'Muhammad Zhafar Al Fathi', role: 'Backend', phone: '+62 895-1497-6015' },
-  { name: 'Aric Yohanes', role: 'Frontend', phone: '+62 823-7955-2087' },
-  { name: 'Hamim Nur Khamid', role: 'Frontend', phone: '+62 821-3325-6573' },
-  { name: 'Nabella Ayu Giwanti', role: 'Frontend / UI-UX', phone: '+62 895-3846-48816' },
-  { name: 'Nur Azizah', role: 'Frontend / UI-UX', phone: '+62 898-1063-020' },
-  { name: 'Unik Trisetyowati', role: 'Frontend / UI-UX', phone: '+62 821-3400-3946' },
+  { name: 'Muhammad Zhafar Al Fathi', role: 'Backend' },
+  { name: 'Aric Yohanes', role: 'Frontend' },
+  { name: 'Hamim Nur Khamid', role: 'Frontend' },
+  { name: 'Nabella Ayu Giwanti', role: 'Frontend / UI-UX' },
+  { name: 'Nur Azizah', role: 'Frontend / UI-UX' },
+  { name: 'Unik Trisetyowati', role: 'Frontend / UI-UX' },
 ]
 
 const PARAGRAPHS = [
@@ -28,51 +28,42 @@ const PARAGRAPHS = [
 
 function AboutPage() {
   return (
-    <div>
-      <section
-        className="flex h-[60vh] items-center justify-center bg-cover bg-center"
-        style={{ backgroundImage: 'url(/homie.jpg)' }}
-      >
-        <div className="flex h-full w-full flex-col items-center justify-center bg-black/50 px-4 text-center">
-          <p className="font-heading text-5xl font-black text-white sm:text-6xl">
-            About
-          </p>
-          <p className="mt-3 text-lg text-white/90 text-balance">
-            Discover Our Values, Our Team and Our Accomplishments
-          </p>
-        </div>
-      </section>
+    <div className="flex flex-col">
+      <PageHero
+        title="Tentang Extinct Fauna"
+        subtitle="Mengenal misi konservasi, nilai-nilai, dan tim di balik platform pelestarian satwa langka."
+        bgImage="/homie.jpg"
+      />
 
-      <section className="page-wrap grid gap-10 py-14 lg:grid-cols-[1.6fr_1fr]">
+      <section className="page-wrap grid gap-12 py-16 lg:grid-cols-[1.6fr_1fr]">
         <div className="flex flex-col gap-8">
-          <div className="grid overflow-hidden rounded-2xl border sm:grid-cols-[30%_1fr]">
-            <div className="flex items-center justify-center bg-neutral-700 p-6 text-center font-heading text-xl font-bold text-white">
-              Our Goal
+          <div className="flex overflow-hidden rounded-2xl border bg-card shadow-sm sm:flex-row flex-col">
+            <div className="flex items-center justify-center bg-primary p-6 text-center font-heading text-xl font-bold text-primary-foreground sm:w-1/3">
+              Misi Kami
             </div>
-            <div className="flex items-center p-6 text-muted-foreground">
-              is the conservation of endangered species and ecosystems on a
-              global scale.
+            <div className="flex items-center p-6 text-muted-foreground leading-relaxed sm:w-2/3">
+              Konservasi spesies terancam punah dan pelestarian ekosistem di seluruh dunia melalui edukasi dan kolaborasi global.
             </div>
           </div>
-          <div className="flex flex-col gap-5 leading-relaxed text-muted-foreground">
-            {PARAGRAPHS.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
+          <div className="flex flex-col gap-6 leading-relaxed text-muted-foreground text-base">
+            {PARAGRAPHS.map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
             ))}
           </div>
         </div>
 
         <aside>
-          <Card className="h-fit">
+          <Card className="rounded-2xl border bg-card shadow-sm h-fit">
             <CardHeader>
-              <CardTitle className="text-center text-xl">
-                Members of the Group
+              <CardTitle className="text-xl font-bold text-center">
+                Tim Pengembang
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               {MEMBERS.map((member) => (
-                <div key={member.name} className="flex items-center gap-3">
-                  <Avatar size="lg">
-                    <AvatarFallback>
+                <div key={member.name} className="flex items-center gap-3.5 p-2 rounded-xl transition-colors hover:bg-muted/50">
+                  <Avatar className="size-12">
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
                       {member.name
                         .split(' ')
                         .slice(0, 2)
@@ -80,15 +71,11 @@ function AboutPage() {
                         .join('')}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold">{member.name}</p>
-                    <Badge variant="secondary" className="mt-0.5">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-sm">{member.name}</p>
+                    <Badge variant="secondary" className="mt-1 rounded-full text-xs">
                       {member.role}
                     </Badge>
-                    <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                      <PhoneIcon className="size-3" />
-                      {member.phone}
-                    </p>
                   </div>
                 </div>
               ))}

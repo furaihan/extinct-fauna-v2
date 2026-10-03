@@ -3,28 +3,28 @@ import { Separator } from '@/shared/ui/separator.tsx'
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto bg-neutral-900 text-neutral-300">
-      <div className="page-wrap flex flex-col items-center gap-4 py-8 sm:flex-row sm:justify-between">
-        <div className="flex items-center gap-2">
+    <footer className="mt-auto bg-card border-t text-muted-foreground">
+      <div className="page-wrap flex flex-col items-center gap-6 py-10 sm:flex-row sm:justify-between">
+        <div className="flex items-center gap-2.5">
           <img src="/logo.svg" alt="Extinct Fauna" className="size-8" />
-          <span className="font-heading font-semibold text-white">
+          <span className="font-heading font-bold text-foreground">
             Extinct Fauna
           </span>
         </div>
-        <nav className="flex items-center gap-6 text-sm uppercase tracking-wide">
-          <Link to="/" className="text-neutral-300 hover:text-white">
-            Home
+        <nav className="flex items-center gap-6 text-sm font-medium">
+          <Link to="/" className="hover:text-foreground transition-colors">
+            Beranda
           </Link>
-          <Link to="/explore" className="text-neutral-300 hover:text-white">
-            Explore
+          <Link to="/explore" className="hover:text-foreground transition-colors">
+            Jelajahi
           </Link>
-          <Link to="/about" className="text-neutral-300 hover:text-white">
-            About
+          <Link to="/about" className="hover:text-foreground transition-colors">
+            Tentang
           </Link>
         </nav>
       </div>
-      <Separator className="bg-white/10" />
-      <div className="page-wrap py-4 text-center text-xs text-neutral-400">
+      <Separator />
+      <div className="page-wrap py-5 text-center text-xs text-muted-foreground">
         &copy; Kelompok 8 21-IF-08. All rights reserved.
       </div>
     </footer>

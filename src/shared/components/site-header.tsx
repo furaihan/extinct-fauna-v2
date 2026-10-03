@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { LogOutIcon, MenuIcon, UserIcon } from 'lucide-react'
 import { Button } from '@/shared/ui/button.tsx'
 import { Separator } from '@/shared/ui/separator.tsx'
@@ -21,11 +21,12 @@ import {
 } from '@/shared/ui/dropdown-menu.tsx'
 import { useSession } from '@/shared/hook/use-session.ts'
 import { useLogout } from '@/modules/auth/components/use-logout.ts'
+import { ThemeToggle } from '@/shared/components/theme-toggle.tsx'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Home' },
-  { to: '/explore', label: 'Explore' },
-  { to: '/about', label: 'About' },
+  { to: '/', label: 'Beranda' },
+  { to: '/explore', label: 'Jelajahi' },
+  { to: '/about', label: 'Tentang' },
 ] as const
 
 export function SiteHeader() {
@@ -33,59 +34,68 @@ export function SiteHeader() {
   const { data: session } = useSession()
   const { logout, loggingOut } = useLogout()
   const isLoggedIn = session?.isAuthenticated ?? false
+  const routerState = useRouterState()
+  const currentPath = routerState.location.pathname
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
-      <div className="page-wrap flex items-center justify-between gap-3 py-3">
-        <Link to="/" className="flex items-center gap-2">
+    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md">
+      <div className="page-wrap flex h-18 items-center justify-between gap-4">
+        <Link to="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
           <img src="/logo.svg" alt="Extinct Fauna" className="size-9" />
           <span className="font-heading text-lg font-bold tracking-tight">
             Extinct Fauna
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          {NAV_ITEMS.map((item) => (
-            <Button
-              key={item.to}
-              variant="ghost"
-              render={<Link to={item.to} />}
-              nativeButton={false}
-            >
-              {item.label}
-            </Button>
-          ))}
+        <nav className="hidden items-center gap-1.5 md:flex">
+          {NAV_ITEMS.map((item) => {
+            const isActive = currentPath === item.to || (item.to !== '/' && currentPath.startsWith(item.to))
+            return (
+              <Button
+                key={item.to}
+                variant={isActive ? 'secondary' : 'ghost'}
+                className="rounded-full font-medium"
+                render={<Link to={item.to} />}
+                nativeButton={false}
+              >
+                {item.label}
+              </Button>
+            )
+          })}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+
           {isLoggedIn ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Button variant="outline" className="gap-2 font-semibold">
+                  <Button variant="outline" className="gap-2 font-semibold rounded-full">
                     <UserIcon data-icon="inline-start" />
                     {session?.user?.username ?? 'Akun'}
                   </Button>
                 }
               />
-              <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuContent align="end" className="w-52 rounded-2xl">
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel>
-                    {session?.user?.username ?? 'Pengguna'}
+                  <DropdownMenuLabel className="font-normal text-muted-foreground">
+                    Masuk sebagai <strong className="text-foreground">{session?.user?.username}</strong>
                   </DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem render={<Link to="/profile" />}>
+                <DropdownMenuItem render={<Link to="/profile" />} className="rounded-xl">
                   <UserIcon />
-                  Profil
+                  Profil Saya
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   disabled={loggingOut}
                   onClick={() => void logout()}
+                  className="rounded-xl"
                 >
                   <LogOutIcon />
-                  {loggingOut ? 'Keluar…' : 'Logout'}
+                  {loggingOut ? 'Keluar…' : 'Keluar'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -93,13 +103,18 @@ export function SiteHeader() {
             <div className="hidden items-center gap-2 sm:flex">
               <Button
                 variant="ghost"
+                className="rounded-full"
                 render={<Link to="/login" />}
                 nativeButton={false}
               >
-                Login
+                Masuk
               </Button>
-              <Button render={<Link to="/signup" />} nativeButton={false}>
-                Sign Up
+              <Button
+                className="rounded-full font-bold"
+                render={<Link to="/signup" />}
+                nativeButton={false}
+              >
+                Daftar
               </Button>
             </div>
           )}
@@ -110,72 +125,74 @@ export function SiteHeader() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="md:hidden"
+                  className="md:hidden rounded-full"
                   aria-label="Buka menu"
                 >
                   <MenuIcon />
                 </Button>
               }
             />
-            <SheetContent side="right" className="w-72">
+            <SheetContent side="right" className="w-72 sm:max-w-sm rounded-l-3xl">
               <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
+                <SheetTitle className="font-heading text-left text-xl font-bold">Menu Navigasi</SheetTitle>
               </SheetHeader>
-              <div className="flex flex-col gap-1 px-4">
+              <div className="flex flex-col gap-2 mt-6">
                 {NAV_ITEMS.map((item) => (
                   <Button
                     key={item.to}
                     variant="ghost"
-                    className="justify-start"
+                    className="justify-start rounded-xl text-base h-11"
                     render={<Link to={item.to} onClick={() => setMenuOpen(false)} />}
                     nativeButton={false}
                   >
                     {item.label}
                   </Button>
                 ))}
-                <Separator className="my-2" />
+                <Separator className="my-3" />
                 {isLoggedIn ? (
                   <>
                     <Button
                       variant="ghost"
-                      className="justify-start"
+                      className="justify-start rounded-xl text-base h-11"
                       render={
                         <Link to="/profile" onClick={() => setMenuOpen(false)} />
                       }
                       nativeButton={false}
                     >
-                      Profil
+                      Profil Saya
                     </Button>
                     <Button
                       variant="ghost"
-                      className="justify-start text-destructive"
+                      className="justify-start rounded-xl text-base h-11 text-destructive"
                       disabled={loggingOut}
                       onClick={() => void logout()}
                     >
                       <LogOutIcon data-icon="inline-start" />
-                      Logout
+                      Keluar
                     </Button>
                   </>
                 ) : (
-                  <>
+                  <div className="flex flex-col gap-2.5 mt-2">
                     <Button
                       variant="outline"
+                      className="w-full rounded-full h-11 font-semibold"
                       render={
                         <Link to="/login" onClick={() => setMenuOpen(false)} />
                       }
                       nativeButton={false}
                     >
-                      Login
+                      Masuk
                     </Button>
                     <Button
+                      className="w-full rounded-full h-11 font-bold"
                       render={
                         <Link to="/signup" onClick={() => setMenuOpen(false)} />
                       }
                       nativeButton={false}
                     >
-                      Sign Up
+                      Daftar
                     </Button>
-                  </>
+                  </div>
                 )}
               </div>
             </SheetContent>

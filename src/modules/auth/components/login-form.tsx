@@ -14,7 +14,11 @@ const draftSchema = z.object({
   password: z.string().min(1, 'Password wajib diisi.'),
 })
 
-export function LoginForm() {
+interface LoginFormProps {
+  redirectTo?: string
+}
+
+export function LoginForm({ redirectTo }: LoginFormProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [submitting, setSubmitting] = useState(false)
@@ -30,7 +34,8 @@ export function LoginForm() {
         await queryClient.invalidateQueries()
         await router.invalidate()
         toast.add({ title: 'Login berhasil.', type: 'success' })
-        await router.navigate({ to: '/', replace: true })
+        const target = redirectTo || '/'
+        await router.navigate({ to: target, replace: true })
       } catch (e) {
         toast.add({
           title: friendlyServerError(e, 'Login gagal.'),
@@ -74,9 +79,9 @@ export function LoginForm() {
         <Button
           type="submit"
           disabled={submitting}
-          className="mt-2 h-11 w-full font-bold"
+          className="mt-2 h-11 w-full font-bold rounded-full"
         >
-          {submitting ? 'MEMPROSES…' : 'LOGIN'}
+          {submitting ? 'Memproses…' : 'Masuk'}
         </Button>
       </FieldGroup>
     </form>
