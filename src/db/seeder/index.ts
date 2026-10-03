@@ -4,17 +4,19 @@ import { Account } from '@/modules/auth/db/account.entity.ts'
 import { User } from '@/modules/auth/db/user.entity.ts'
 
 /**
- * Seeds a login-ready admin account. Legacy imported accounts keep their
- * unverifiable bcrypt hashes; this admin uses argon2id via Bun.password.
+ * Seeds a login-ready admin account using ADMIN_USERNAME / ADMIN_PASSWORD.
+ * Legacy imported accounts keep their original bcrypt hashes and remain
+ * verifiable through the shared salted-bcrypt path in password.server.ts.
  */
-async function seedAdmin() {
+export async function seedAdmin() {
   const db = await getDb()
   const accountRepo = db.getRepository(Account)
   const userRepo = db.getRepository(User)
 
-  const passwordHash = await Bun.password.hash(env.ADMIN_PASSWORD, {
-    algorithm: 'argon2id',
-  })
+  // Uses the same salted-bcrypt path as login/signup so the seeded admin is
+  // verifiable through password.server.ts.
+  const { hashPassword } = await import('@/modules/auth/server/password.server.ts')
+  const passwordHash = await hashPassword(env.ADMIN_PASSWORD)
 
   const existingUser = await userRepo.findOne({
     where: { username: env.ADMIN_USERNAME },
@@ -55,12 +57,14 @@ async function seedAdmin() {
   console.log(`Admin "${env.ADMIN_USERNAME}" created.`)
 }
 
-try {
-  await seedAdmin()
-  console.log('Seeding complete.')
-} catch (error) {
-  console.error('Seeding failed:', error)
-  process.exitCode = 1
-} finally {
-  await closeDb()
+if (import.meta.main) {
+  try {
+    await seedAdmin()
+    console.log('Seeding complete.')
+  } catch (error) {
+    console.error('Seeding failed:', error)
+    process.exitCode = 1
+  } finally {
+    await closeDb()
+  }
 }
