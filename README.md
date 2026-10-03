@@ -95,11 +95,7 @@ Newly generated primary keys use **UUID v7** (`Bun.randomUUIDv7`).
 
 ## Authentication note
 
-Passwords are hashed with **argon2id** via `Bun.password`. The legacy accounts
-imported from the old database were hashed with bcrypt over a salted string whose
-secrets are no longer available, so **their stored hashes cannot be verified**.
-Only the seeded admin account (`ADMIN_USERNAME` / `ADMIN_PASSWORD`) can sign in
-until those users reset their passwords.
+Passwords are hashed with **argon2id** via `Bun.password`. Legacy accounts imported from the old database use bcrypt and are verified via `PREFIX_SALT` and `SUFFIX_SALT`. Upon successful login, legacy accounts are transparently rehashed to argon2id.
 
 Expected, user-facing errors (wrong credentials, duplicate username/email) are
 thrown as `AppError` and logged at `debug`, so they do not pollute server logs;

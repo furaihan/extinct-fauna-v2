@@ -8,6 +8,7 @@ import {
   emailExists,
   findAccountByEmailOrUsername,
   findUserById,
+  updatePasswordHash,
   usernameExists,
 } from './auth.repo.ts'
 
@@ -44,7 +45,7 @@ export const loginFn = createServerFn({ method: 'POST' })
   .validator(loginSchema)
   .handler(async ({ data }) => {
     try {
-      const { verifyPassword } = await import('./password.server.ts')
+      const { verifyPassword, passwordNeedsRehash, hashPassword } = await import('./password.server.ts')
       const found = await findAccountByEmailOrUsername(data.emailOrUsername)
 
       if (!found || !found.account.password) {
@@ -53,6 +54,15 @@ export const loginFn = createServerFn({ method: 'POST' })
       const valid = await verifyPassword(data.password, found.account.password)
       if (!valid) {
         throw new AppError('Email/username atau password salah.')
+      }
+
+      if (passwordNeedsRehash(found.account.password)) {
+        try {
+          const newHash = await hashPassword(data.password)
+          await updatePasswordHash(found.account.account_id, newHash)
+        } catch (err) {
+          console.error('Failed to rehash password on login:', err)
+        }
       }
 
       const session = await useAppSession()

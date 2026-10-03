@@ -34,6 +34,14 @@ export async function findAccountById(id: string): Promise<Account | null> {
   return db.getRepository(Account).findOne({ where: { account_id: id } })
 }
 
+export async function updatePasswordHash(
+  accountId: string,
+  passwordHash: string,
+): Promise<void> {
+  const db = await getDb()
+  await db.getRepository(Account).update({ account_id: accountId }, { password: passwordHash })
+}
+
 export async function findUserById(id: string): Promise<User | null> {
   const db = await getDb()
   return db.getRepository(User).findOne({ where: { user_id: id } })
