@@ -15,7 +15,8 @@
     "db:migrate": "bun run src/db/migrate.ts",
     "db:import": "bun src/db/import-old-dump.ts",
     "db:seed": "bun src/db/seeder/index.ts",
-    "db:setup": "bun run src/db/migrate.ts && bun src/db/import-old-dump.ts && bun src/db/seeder/index.ts"
+    "db:setup": "bun run src/db/migrate.ts && bun src/db/import-old-dump.ts && bun src/db/seeder/index.ts",
+    "db:reset": "bun src/db/reset-db.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

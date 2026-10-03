@@ -189,7 +189,7 @@ function bool(value: string | null): boolean | null {
   return value === '1' || value.toLowerCase() === 'true'
 }
 
-async function main() {
+export async function importOldDump() {
   const sql = readFileSync(DUMP_PATH, 'utf8')
   const db = await getDb()
 
@@ -291,15 +291,16 @@ async function main() {
   await db.query(
     `SELECT setval(pg_get_serial_sequence('descriptions', 'description_id'), COALESCE((SELECT MAX(description_id) FROM descriptions), 1))`,
   )
-
-  console.log('Import complete.')
 }
 
-try {
-  await main()
-} catch (error) {
-  console.error('Import failed:', error)
-  process.exitCode = 1
-} finally {
-  await closeDb()
+if (import.meta.main) {
+  try {
+    await importOldDump()
+    console.log('Import complete.')
+  } catch (error) {
+    console.error('Import failed:', error)
+    process.exitCode = 1
+  } finally {
+    await closeDb()
+  }
 }
