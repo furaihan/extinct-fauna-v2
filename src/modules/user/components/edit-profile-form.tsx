@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
@@ -11,32 +11,104 @@ import { useAppForm } from '@/shared/form/index.ts'
 import { friendlyServerError } from '@/shared/lib/errors.ts'
 import { getProfileFn, updateProfileFn } from '@/modules/user/server/user.functions.ts'
 import { userKeys } from '@/modules/user/query-keys.ts'
+import type { UserProfile } from '@/modules/user/types.ts'
 
 const draftSchema = z.object({
-  firstName: z.string().max(30, 'Maksimal 30 karakter.'),
-  lastName: z.string().max(30, 'Maksimal 30 karakter.'),
+  firstName: z
+    .string()
+    .trim()
+    .max(30, 'Maksimal 30 karakter.')
+    .refine((v) => v === '' || v.length >= 2, 'Minimal 2 karakter.'),
+  lastName: z
+    .string()
+    .trim()
+    .max(30, 'Maksimal 30 karakter.')
+    .refine((v) => v === '' || v.length >= 2, 'Minimal 2 karakter.'),
   phone: z
     .string()
+    .trim()
     .max(20)
     .refine(
       (v) => v === '' || /^(0|\+62)(\d{8,15})$/.test(v),
       'Nomor telepon tidak valid.',
     ),
-  address: z.string().max(255, 'Maksimal 255 karakter.'),
-  bio: z.string().max(1023, 'Maksimal 1023 karakter.'),
+  address: z
+    .string()
+    .trim()
+    .max(255, 'Maksimal 255 karakter.')
+    .refine((v) => v === '' || v.length >= 2, 'Minimal 2 karakter.'),
+  bio: z
+    .string()
+    .trim()
+    .max(1023, 'Maksimal 1023 karakter.')
+    .refine((v) => v === '' || v.length >= 2, 'Minimal 2 karakter.'),
 })
 
+type DraftValues = z.infer<typeof draftSchema>
+
+function toFormValues(profile: UserProfile): DraftValues {
+  return {
+    firstName: profile.firstName ?? '',
+    lastName: profile.lastName ?? '',
+    phone: profile.phone ?? '',
+    address: profile.address ?? '',
+    bio: profile.bio ?? '',
+  }
+}
+
 export function EditProfileForm() {
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: userKeys.profile,
     queryFn: () => getProfileFn(),
+    // A stale cache entry would seed the form with outdated values.
+    staleTime: 0,
   })
 
+  if (isLoading) {
+    return (
+      <div className="page-wrap py-12">
+        <Skeleton className="h-96 w-full rounded-4xl" />
+      </div>
+    )
+  }
+
+  // No data at all: either the request failed or the profile is missing.
+  // A failed *background* refetch keeps the already-seeded form mounted.
+  if (!data?.profile) {
+    return (
+      <div className="page-wrap flex justify-center py-10">
+        <Card className="w-full max-w-2xl">
+          <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              {isError ? 'Gagal memuat profil.' : 'Profil tidak ditemukan.'}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="font-bold"
+              onClick={() => void refetch()}
+            >
+              Coba Lagi
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Keyed so a different account never inherits stale draft state.
+  return <EditProfileFields key={data.profile.userId} profile={data.profile} />
+}
+
+function EditProfileFields({ profile }: { profile: UserProfile }) {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  // Captured once at mount: a background refetch must not overwrite edits.
+  const [initialValues] = useState<DraftValues>(() => toFormValues(profile))
+
   const mutation = useMutation({
-    mutationFn: (values: z.infer<typeof draftSchema>) =>
-      updateProfileFn({ data: values }),
+    mutationFn: (values: DraftValues) => updateProfileFn({ data: values }),
     onSuccess: async () => {
       toast.add({ title: 'Profil tersimpan.', type: 'success' })
       await queryClient.invalidateQueries({ queryKey: userKeys.profile })
@@ -51,39 +123,12 @@ export function EditProfileForm() {
   })
 
   const form = useAppForm({
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      phone: '',
-      address: '',
-      bio: '',
-    },
+    defaultValues: initialValues,
     validators: { onChange: draftSchema },
     onSubmit: async ({ value }) => {
       await mutation.mutateAsync(value)
     },
   })
-
-  const [initialized, setInitialized] = useState(false)
-  useEffect(() => {
-    if (initialized || !data?.profile) return
-    form.reset({
-      firstName: data.profile.firstName ?? '',
-      lastName: data.profile.lastName ?? '',
-      phone: data.profile.phone ?? '',
-      address: data.profile.address ?? '',
-      bio: data.profile.bio ?? '',
-    })
-    setInitialized(true)
-  }, [data, form, initialized])
-
-  if (isLoading) {
-    return (
-      <div className="page-wrap py-12">
-        <Skeleton className="h-96 w-full rounded-4xl" />
-      </div>
-    )
-  }
 
   return (
     <div className="page-wrap flex justify-center py-10">
