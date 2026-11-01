@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "bunx --bun vite dev --port 3100",
+    "dev:e2e": "bunx --bun vite dev --port 3101",
     "generate-routes": "tsr generate",
     "build": "bunx --bun vite build",
     "start": "bun server.ts",
@@ -16,7 +17,11 @@
     "db:import": "bun src/db/import-old-dump.ts",
     "db:seed": "bun src/db/seeder/index.ts",
     "db:setup": "bun run src/db/migrate.ts && bun src/db/import-old-dump.ts && bun src/db/seeder/index.ts",
-    "db:reset": "bun src/db/reset-db.ts --force"
+    "db:reset": "bun src/db/reset-db.ts --force",
+    "db:test:setup": "bun --env-file=.env.test run db:setup",
+    "test:e2e": "node --env-file=.env.test ./node_modules/@playwright/test/cli.js test",
+    "test:e2e:ui": "node --env-file=.env.test ./node_modules/@playwright/test/cli.js test --ui",
+    "test:e2e:report": "node ./node_modules/@playwright/test/cli.js show-report"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -46,6 +51,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@tanstack/devtools-vite": "latest",
     "@tanstack/intent": "^0.5.6",
     "@tanstack/router-cli": "latest",

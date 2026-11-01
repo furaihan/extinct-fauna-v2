@@ -63,6 +63,7 @@ The dev server runs at **http://localhost:3100**.
 | Script                  | Description                                                        |
 | ----------------------- | ------------------------------------------------------------------ |
 | `bun run dev`           | Start the Vite dev server on port 3100                             |
+| `bun run dev:e2e`       | Start the dev server on port 3101 for E2E runs                     |
 | `bun run build`         | Build the client and server bundles into `dist/`                   |
 | `bun run start`         | Run the production server (`bun server.ts`)                        |
 | `bun run preview`       | Preview the production build                                       |
@@ -72,6 +73,9 @@ The dev server runs at **http://localhost:3100**.
 | `bun run db:import`     | Import the legacy MySQL dump into PostgreSQL                       |
 | `bun run db:seed`       | Seed the admin account                                             |
 | `bun run db:setup`      | `db:migrate` → `db:import` → `db:seed`                             |
+| `bun run db:test:setup` | Same as `db:setup`, against the database in `.env.test`            |
+| `bun run test:e2e`      | Run the Playwright suite (headed UI with `test:e2e:ui`)            |
+| `bun run test:e2e:report` | Open the last Playwright HTML report                             |
 
 ## Database
 
@@ -152,6 +156,60 @@ Before committing changes, run:
 bun run typecheck
 bun run build
 ```
+
+## End-to-end tests
+
+Playwright runs against a **dedicated test database**, because the quiz specs
+insert `quizzes` / `quiz_details` rows. It never touches your dev data.
+
+```sh
+# 1. Copy .env.test.example to .env.test and point DATABASE_URL at the test DB
+cp .env.test.example .env.test
+
+# 2. Create and populate the test database (migrate + import + seed admin)
+bun run db:test:setup
+
+# 3. Install the browser once
+bunx playwright install chromium
+
+# 4. Run the suite
+bun run test:e2e
+```
+
+Layout:
+
+```
+playwright.config.ts     # port 3101, storage-state setup project
+e2e/
+├── auth.setup.ts        # logs in once, saves e2e/.auth/admin.json
+├── support/hydration.ts # navigation helper (see note below)
+├── smoke.spec.ts        # home, header nav, 404
+├── explore.spec.ts      # list, filters, card → detail
+├── auth.spec.ts         # guards, bad credentials, logout
+└── quiz.spec.ts         # full 5-question run → result page
+```
+
+Notes:
+
+- The suite is launched with **Node**, not Bun
+  (`node --env-file=.env.test ./node_modules/@playwright/test/cli.js test`),
+  because Playwright's runner targets Node ≥20 and the config reads `.env.test`
+  at load time.
+- The test server runs on **3101** via `dev:e2e`. `bun run dev` hardcodes 3100,
+  where a dev-database server is often already running.
+- Always navigate with `gotoHydrated()` from `e2e/support/hydration.ts`. Vite
+  serves HTML before React hydrates, and clicking in that window runs the
+  browser's native behaviour — the login form would do a `GET /login?` submit
+  instead of calling the server function.
+- Seeded expectations: 9 animals, 3 per type, 1 African.
+
+### Playwright MCP (agent browser)
+
+`.opencode/opencode.jsonc` registers a project-scoped Playwright MCP server
+(`@playwright/mcp`, isolated profile) so agents can inspect the running app.
+It is read when OpenCode starts, so restart the session after changing it. It
+points at whatever server you have running — use port 3100 (dev data) for
+design review, not 3101 mid-test.
 
 ## Credits
 
